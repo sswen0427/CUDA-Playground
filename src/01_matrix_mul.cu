@@ -51,10 +51,10 @@ void matrixMulCPU(float* A, float* B, float* C, int M, int N, int K)
 
 /**
  * The output of the program is as follows (timings may vary based on the system):
- * CPU matrix multiplication took 7.88033 seconds
- * Host to device memory transfer took 0.00233 seconds
- * GPU kernel execution took 0.00025 seconds
- * Device to host memory transfer took 0.01200 seconds
+ * CPU matrix multiplication took 8333.08369 milliseconds
+ * Host to device memory transfer took 3.93945 milliseconds
+ * GPU kernel execution took 111.46208 milliseconds
+ * Device to host memory transfer took 12.22028 milliseconds
  * Result verification passed!
  */
 int main()
@@ -77,8 +77,8 @@ int main()
     auto start_cpu = std::chrono::high_resolution_clock::now();
     matrixMulCPU(h_A, h_B, h_C_ref, M, N, K);
     auto end_cpu = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> cpu_duration = end_cpu - start_cpu;
-    printf("CPU matrix multiplication took %.5f seconds\n", cpu_duration.count());
+    std::chrono::duration<double, std::milli> cpu_duration = end_cpu - start_cpu;
+    printf("CPU matrix multiplication took %.5f milliseconds\n", cpu_duration.count());
 
     float* d_A, * d_B, * d_C;
     CHECK(cudaMalloc(&d_A, sizeA));
@@ -89,8 +89,8 @@ int main()
     CHECK(cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice));
     auto host_to_device_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> host_to_device_duration = host_to_device_end - host_to_device_start;
-    printf("Host to device memory transfer took %.5f seconds\n", host_to_device_duration.count());
+    std::chrono::duration<double, std::milli> host_to_device_duration = host_to_device_end - host_to_device_start;
+    printf("Host to device memory transfer took %.5f milliseconds\n", host_to_device_duration.count());
 
     dim3 blockSize(16, 16);
     dim3 gridSize((K + blockSize.x - 1) / blockSize.x,
@@ -99,14 +99,14 @@ int main()
     matrixMulNaive<<<gridSize, blockSize>>>(d_A, d_B, d_C, M, N, K);
     CHECK(cudaGetLastError());
     auto kernel_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> kernel_duration = kernel_end - kernel_start;
-    printf("GPU kernel execution took %.5f seconds\n", kernel_duration.count());
+    std::chrono::duration<double, std::milli> kernel_duration = kernel_end - kernel_start;
+    printf("GPU kernel execution took %.5f milliseconds\n", kernel_duration.count());
 
     auto device_to_host_start = std::chrono::high_resolution_clock::now();
     CHECK(cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost));
     auto device_to_host_end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> device_to_host_duration = device_to_host_end - device_to_host_start;
-    printf("Device to host memory transfer took %.5f seconds\n", device_to_host_duration.count());
+    std::chrono::duration<double, std::milli> device_to_host_duration = device_to_host_end - device_to_host_start;
+    printf("Device to host memory transfer took %.5f milliseconds\n", device_to_host_duration.count());
 
     // Verify results
     for (int i = 0; i < M * K; i++)
