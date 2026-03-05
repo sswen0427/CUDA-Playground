@@ -97,6 +97,7 @@ int main()
                   (M + blockSize.y - 1) / blockSize.y);
     auto kernel_start = std::chrono::high_resolution_clock::now();
     matrixMulNaive<<<gridSize, blockSize>>>(d_A, d_B, d_C, M, N, K);
+    cudaDeviceSynchronize();
     CHECK(cudaGetLastError());
     auto kernel_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> kernel_duration = kernel_end - kernel_start;
